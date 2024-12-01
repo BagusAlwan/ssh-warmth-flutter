@@ -10,6 +10,7 @@ class ConfirmationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if the file exists before proceeding
     if (!File(imagePath).existsSync()) {
       // Handle case where the file path is invalid or doesn't exist
       return Scaffold(
@@ -30,6 +31,7 @@ class ConfirmationScreen extends StatelessWidget {
 
     Future<void> _classifyImage(BuildContext context) async {
       try {
+        // Show loading indicator while processing
         showDialog(
           context: context,
           barrierDismissible: false,
@@ -40,19 +42,28 @@ class ConfirmationScreen extends StatelessWidget {
           },
         );
 
-        final classificationResult =
+        // Classify the image and get the result (warmth index)
+        final warmthData =
             await _imageClassificationService.classifyImage(File(imagePath));
 
+// Extract warmth index from the response data
+        final warmthIndex =
+            warmthData['warmthIndex']; // warmthIndex: 0.4 (for example)
+
+// Close the loading dialog
         Navigator.pop(context);
 
+// Navigate to the next screen with the warmth index data
         Navigator.pushNamed(
           context,
           '/additional-info',
-          arguments: classificationResult,
+          arguments:
+              warmthIndex, // Pass the warmthIndex directly to the next screen
         );
       } catch (e) {
-        Navigator.pop(context);
+        Navigator.pop(context); // Close the loading dialog
 
+        // Show error dialog if something goes wrong
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(

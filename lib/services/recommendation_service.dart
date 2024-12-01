@@ -1,8 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
 
 class RecommendationService {
   final Dio _dio = Dio();
-  final String _recommendationUrl = 'http://url';
+  final String _recommendationUrl = 'http://localhost:8080/recommendation';
 
   Future<List<String>> getRecommendations({
     required Map<String, double> warmthIndices,
@@ -17,9 +19,7 @@ class RecommendationService {
           'lat': lat,
           'lon': lon,
         },
-        options: Options(headers: {
-          'Content-Type': 'application/json',
-        }),
+        options: Options(headers: {'Content-Type': 'application/json'}),
       );
 
       if (response.statusCode == 200) {

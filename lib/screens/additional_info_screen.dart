@@ -5,52 +5,53 @@ import '../services/recommendation_service.dart';
 class AdditionalInfoScreen extends StatelessWidget {
   final RecommendationService _recommendationService = RecommendationService();
 
-  Future<Position> _getDeviceLocation(BuildContext context) async {
+  Future<Position> _getDeviceLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Show error if location services are not enabled
       return Future.error('Location services are disabled.');
     }
 
-    // Check for location permissions
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        // Show error if permission is denied
         return Future.error('Location permissions are denied.');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      // Show error if permissions are denied forever
       return Future.error('Location permissions are permanently denied.');
     }
 
-    // Return the current position of the device
     return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
   }
 
-  void _getRecommendations(
-      BuildContext context, Map<String, dynamic> data) async {
+  void _getRecommendations(BuildContext context, double warmthIndex) async {
     try {
-      // Get the device's current location
-      final Position position = await _getDeviceLocation(context);
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(child: CircularProgressIndicator());
+        },
+      );
 
-      final warmthIndices = Map<String, double>.from(data['warmthIndices']);
+      final Position position = await _getDeviceLocation();
+
       final lat = position.latitude.toString();
       final lon = position.longitude.toString();
 
       final recommendations = await _recommendationService.getRecommendations(
-        warmthIndices: warmthIndices,
+        warmthIndices: {"warmthIndex": warmthIndex},
         lat: lat,
         lon: lon,
       );
+
+      Navigator.pop(context);
 
       Navigator.pushNamed(
         context,
@@ -58,6 +59,8 @@ class AdditionalInfoScreen extends StatelessWidget {
         arguments: recommendations,
       );
     } catch (e) {
+      Navigator.pop(context);
+
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -76,32 +79,35 @@ class AdditionalInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> classificationResult =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-
-    final items = classificationResult['items'] as List<String>;
-    final warmthIndices =
-        classificationResult['warmthIndices'] as Map<String, double>;
+    final double warmthIndex =
+        ModalRoute.of(context)!.settings.arguments as double;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Additional Information'),
         centerTitle: true,
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Detected Clothing Items:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          ...items.map((item) => Text('$item: ${warmthIndices[item]}')),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () => _getRecommendations(context, classificationResult),
-            child: Text('Get Recommendations'),
-          ),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Warmth Index:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            Text(
+              warmthIndex.toString(),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => _getRecommendations(context, warmthIndex),
+              child: Text('Get Recommendations'),
+            ),
+          ],
+        ),
       ),
     );
   }
