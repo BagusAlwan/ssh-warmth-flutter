@@ -20,7 +20,7 @@ class ConfirmationScreen extends StatelessWidget {
       final warmthData =
           await _imageClassificationService.classifyImage(File(imagePath));
 
-      final warmthIndex = (warmthData['warmth_index'])?.toDouble() ?? 0.0;
+      final warmthIndex = (warmthData['warmth_index'] as num?)?.toDouble() ?? 0.0;
 
       Navigator.pop(context);
       Navigator.pushNamed(context, '/additional-info', arguments: warmthIndex);

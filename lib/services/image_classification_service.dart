@@ -8,9 +8,9 @@ class ImageClassificationService {
   ImageClassificationService()
       : _dio = Dio(
           BaseOptions(
-            connectTimeout: const Duration(seconds: 120),
-            receiveTimeout: const Duration(seconds: 120),
-            sendTimeout: const Duration(seconds: 120),
+            connectTimeout: const Duration(seconds: 60),
+            receiveTimeout: const Duration(seconds: 60),
+            sendTimeout: const Duration(seconds: 60),
           ),
         );
 
