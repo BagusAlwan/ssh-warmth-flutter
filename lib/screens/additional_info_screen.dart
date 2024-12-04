@@ -79,10 +79,8 @@ class AdditionalInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Retrieve the warmthIndex from the route arguments
     final warmthIndex = ModalRoute.of(context)?.settings.arguments;
 
-    // Check if warmthIndex is null or not a double
     if (warmthIndex == null || warmthIndex is! double) {
       return Scaffold(
         appBar: AppBar(
@@ -98,7 +96,6 @@ class AdditionalInfoScreen extends StatelessWidget {
       );
     }
 
-    // Proceed with valid warmthIndex
     return Scaffold(
       appBar: AppBar(
         title: Text('Additional Information'),

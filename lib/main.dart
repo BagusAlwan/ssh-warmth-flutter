@@ -21,7 +21,6 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => CameraScreen(),
         '/confirmation': (context) {
-          // Retrieve the imagePath passed as arguments
           final String imagePath =
               ModalRoute.of(context)?.settings.arguments as String;
           return ConfirmationScreen(imagePath: imagePath);

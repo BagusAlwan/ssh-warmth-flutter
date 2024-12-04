@@ -15,17 +15,14 @@ class ImageClassificationService {
         );
 
   Future<Map<String, dynamic>> classifyImage(File imageFile) async {
-    // Validate the file
     if (!imageFile.existsSync()) {
       throw Exception('Image file does not exist: ${imageFile.path}');
     }
 
     try {
-      // Debug the file details
       print('Sending file: ${imageFile.path}');
       print('File size: ${imageFile.lengthSync()} bytes');
 
-      // Create FormData
       final formData = FormData.fromMap({
         'image': await MultipartFile.fromFile(
           imageFile.path,

@@ -14,13 +14,13 @@ class _CameraScreenState extends State<CameraScreen> {
   late Future<void> _initializeControllerFuture;
   late List<CameraDescription> _cameras;
 
-  String appBarTitle = "Loading..."; // Default title before fetching data
+  String appBarTitle = "Loading...";
 
   @override
   void initState() {
     super.initState();
     _initializeCamera();
-    _fetchServerData(); // Fetch the title from the server
+    _fetchServerData();
   }
 
   Future<void> _initializeCamera() async {
@@ -37,41 +37,33 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Future<void> _fetchServerData() async {
     try {
-      // Replace with your server URL
       final response = await http.get(Uri.parse('http://192.168.24.5:3000'));
       if (response.statusCode == 200) {
         setState(() {
-          appBarTitle = response.body; // Set the title to the response body
+          appBarTitle = response.body;
         });
       } else {
         setState(() {
-          appBarTitle =
-              "Error Fetching Data"; // Display an error if not successful
+          appBarTitle = "Error Fetching Data";
         });
       }
     } catch (e) {
       setState(() {
-        appBarTitle = "Connection Error"; // Display connection error
+        appBarTitle = "Connection Error";
       });
     }
   }
 
   Future<File> _convertToPng(File originalFile) async {
     try {
-      // Read the image as bytes
       final imageBytes = await originalFile.readAsBytes();
-
-      // Decode the image using the image package
       final img.Image? decodedImage = img.decodeImage(imageBytes);
 
       if (decodedImage == null) {
         throw Exception('Failed to decode image');
       }
 
-      // Encode the image to PNG
       final List<int> pngBytes = img.encodePng(decodedImage);
-
-      // Save the PNG image to a new file
       final String newPath = originalFile.path.replaceAll('.jpg', '.png');
       final File pngFile = File(newPath);
       await pngFile.writeAsBytes(pngBytes);
@@ -94,12 +86,9 @@ class _CameraScreenState extends State<CameraScreen> {
     try {
       await _initializeControllerFuture;
       final XFile image = await _cameraController.takePicture();
-
-      // Convert the image to PNG
       final File originalFile = File(image.path);
       final File pngFile = await _convertToPng(originalFile);
 
-      // Navigate to the confirmation screen with the PNG file path
       Navigator.pushNamed(
         context,
         '/confirmation',
@@ -127,7 +116,7 @@ class _CameraScreenState extends State<CameraScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          appBarTitle, // Use the fetched title
+          appBarTitle,
           style: TextStyle(
             fontSize: 24.0,
             fontWeight: FontWeight.bold,
@@ -148,10 +137,8 @@ class _CameraScreenState extends State<CameraScreen> {
           future: _initializeControllerFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              // Center the camera preview
               return CameraPreview(_cameraController);
             } else {
-              // Center the progress indicator
               return CircularProgressIndicator();
             }
           },
