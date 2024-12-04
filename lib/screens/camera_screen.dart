@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as img;
 
 class CameraScreen extends StatefulWidget {
   @override
@@ -12,22 +14,74 @@ class _CameraScreenState extends State<CameraScreen> {
   late Future<void> _initializeControllerFuture;
   late List<CameraDescription> _cameras;
 
+  String appBarTitle = "Loading..."; // Default title before fetching data
+
   @override
   void initState() {
     super.initState();
     _initializeCamera();
+    _fetchServerData(); // Fetch the title from the server
   }
 
   Future<void> _initializeCamera() async {
     _cameras = await availableCameras();
     _cameraController = CameraController(
       _cameras[0],
-      ResolutionPreset.high,
+      ResolutionPreset.max,
     );
 
     _initializeControllerFuture = _cameraController.initialize();
 
     setState(() {});
+  }
+
+  Future<void> _fetchServerData() async {
+    try {
+      // Replace with your server URL
+      final response = await http.get(Uri.parse('http://192.168.24.5:3000'));
+      if (response.statusCode == 200) {
+        setState(() {
+          appBarTitle = response.body; // Set the title to the response body
+        });
+      } else {
+        setState(() {
+          appBarTitle =
+              "Error Fetching Data"; // Display an error if not successful
+        });
+      }
+    } catch (e) {
+      setState(() {
+        appBarTitle = "Connection Error"; // Display connection error
+      });
+    }
+  }
+
+  Future<File> _convertToPng(File originalFile) async {
+    try {
+      // Read the image as bytes
+      final imageBytes = await originalFile.readAsBytes();
+
+      // Decode the image using the image package
+      final img.Image? decodedImage = img.decodeImage(imageBytes);
+
+      if (decodedImage == null) {
+        throw Exception('Failed to decode image');
+      }
+
+      // Encode the image to PNG
+      final List<int> pngBytes = img.encodePng(decodedImage);
+
+      // Save the PNG image to a new file
+      final String newPath = originalFile.path.replaceAll('.jpg', '.png');
+      final File pngFile = File(newPath);
+      await pngFile.writeAsBytes(pngBytes);
+
+      print('Image converted to PNG: ${pngFile.path}');
+      return pngFile;
+    } catch (e) {
+      print('Error converting image to PNG: $e');
+      throw Exception('Error converting image to PNG');
+    }
   }
 
   @override
@@ -39,11 +93,17 @@ class _CameraScreenState extends State<CameraScreen> {
   void _takePicture(BuildContext context) async {
     try {
       await _initializeControllerFuture;
-      final image = await _cameraController.takePicture();
+      final XFile image = await _cameraController.takePicture();
+
+      // Convert the image to PNG
+      final File originalFile = File(image.path);
+      final File pngFile = await _convertToPng(originalFile);
+
+      // Navigate to the confirmation screen with the PNG file path
       Navigator.pushNamed(
         context,
         '/confirmation',
-        arguments: image.path,
+        arguments: pngFile.path,
       );
     } catch (e) {
       showDialog(
@@ -67,7 +127,7 @@ class _CameraScreenState extends State<CameraScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'WARMTH DETECTION',
+          appBarTitle, // Use the fetched title
           style: TextStyle(
             fontSize: 24.0,
             fontWeight: FontWeight.bold,

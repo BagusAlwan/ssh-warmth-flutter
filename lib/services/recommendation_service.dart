@@ -4,10 +4,10 @@ import 'package:dio/dio.dart';
 
 class RecommendationService {
   final Dio _dio = Dio();
-  final String _recommendationUrl = 'http://localhost:8080/recommendation';
+  final String _recommendationUrl = 'http://192.168.24.5:3000/recommendation';
 
   Future<List<String>> getRecommendations({
-    required Map<String, double> warmthIndices,
+    required double warmthIndices,
     required String lat,
     required String lon,
   }) async {
@@ -15,14 +15,14 @@ class RecommendationService {
       final response = await _dio.post(
         _recommendationUrl,
         data: {
-          'warmthIndices': warmthIndices,
+          'warmthIndex': warmthIndices,
           'lat': lat,
           'lon': lon,
         },
         options: Options(headers: {'Content-Type': 'application/json'}),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         return List<String>.from(response.data['recommendations']);
       } else {
         throw Exception('Failed to fetch recommendations');
