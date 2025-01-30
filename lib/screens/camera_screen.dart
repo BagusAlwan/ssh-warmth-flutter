@@ -175,7 +175,7 @@ class _CameraScreenState extends State<CameraScreen> {
             ),
             IconButton(
               icon: Icon(Icons.attach_file),
-              color: Colors.white,
+              color: Colors.black,
               onPressed: () {
                 //Cahnge a little bit of things
               },
