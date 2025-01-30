@@ -169,7 +169,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 child: Icon(
                   Icons.camera_alt,
                   size: 40.0,
-                  color: Colors.black,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -177,7 +177,7 @@ class _CameraScreenState extends State<CameraScreen> {
               icon: Icon(Icons.attach_file),
               color: Colors.white,
               onPressed: () {
-                //Nothign yet
+                //Cahnge a little bit of things
               },
             ),
           ],
